@@ -249,7 +249,7 @@ module "tags_new" {
 ### ✅ VALID Configuration
 ```hcl
 module "tags" {
-  source = "./modules/cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   env            = "prd"
   project        = "payments"
@@ -268,7 +268,7 @@ module "tags" {
 ### ❌ INVALID Configuration (Multiple Errors)
 ```hcl
 module "tags" {
-  source = "./modules/cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   env            = "production"     # ❌ Must be "prd"
   project        = "payment-system" # ❌ 15 chars > 10 max

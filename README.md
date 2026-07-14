@@ -19,7 +19,7 @@ A comprehensive Terraform module for managing consistent tagging across multiclo
 
 ```hcl
 module "tags" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   environment = "dev"
   application = "myapp"
@@ -31,7 +31,7 @@ module "tags" {
 
 ```hcl
 module "tags" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   # Required variables
   environment = "production"
@@ -204,7 +204,7 @@ Mandatory tag validation ensures that all specified required tags are present in
 
 ```hcl
 module "tags_dev" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   environment    = "dev"
   application    = "backend"
@@ -223,7 +223,7 @@ module "tags_dev" {
 
 ```hcl
 module "tags_prod" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   environment      = "prod"
   application      = "webapp"
@@ -254,7 +254,7 @@ module "tags_prod" {
 
 ```hcl
 module "tags_tenant" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   environment     = "prod"
   application     = "saas-api"

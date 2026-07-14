@@ -541,7 +541,7 @@ schedule = "0 4 * * *"  # ✓ Valid: daily backups at 4 AM UTC
 ### Minimal Configuration (Only Mandatory)
 ```hcl
 module "tags" {
-  source = "./modules/cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   # Mandatory tags
   env             = "prd"
@@ -571,7 +571,7 @@ name_prefix     = "prdpay"  # Generated: prd + pay
 ### Complete Configuration (with Optional)
 ```hcl
 module "tags" {
-  source = "./modules/cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   # Mandatory tags
   env             = "prd"

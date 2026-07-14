@@ -114,7 +114,7 @@ labels = module.tags.gcp_labels
 ### 1. Microservices Architecture
 ```hcl
 module "tags" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
   
   environment = "prod"
   application = "payment-service"
@@ -132,7 +132,7 @@ module "tags" {
 ### 2. Multi-Tenant SaaS
 ```hcl
 module "tags" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
   
   environment    = "prod"
   application    = "saas-platform"
@@ -150,7 +150,7 @@ module "tags" {
 ### 3. Cost Attribution & Chargeback
 ```hcl
 module "tags" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
   
   environment    = "prod"
   application    = "data-warehouse"
@@ -172,7 +172,7 @@ module "tags" {
 ### 4. Compliance & Governance
 ```hcl
 module "tags" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
   
   environment = "prod"
   application = "healthcare-api"
@@ -199,7 +199,7 @@ module "tags" {
 ### 5. Development Environment
 ```hcl
 module "tags" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
   
   environment = "dev"
   application = "feature-branch"
@@ -218,7 +218,7 @@ module "tags" {
 ### Pattern 1: Shared Across Modules
 ```hcl
 module "tags" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
   environment = "prod"
   application = "microservices"
   owner = "platform"
@@ -240,14 +240,14 @@ module "database" {
 ### Pattern 2: Environment Specific
 ```hcl
 module "tags_dev" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
   environment = "dev"
   application = var.app_name
   owner = "dev-team"
 }
 
 module "tags_prod" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
   environment = "prod"
   application = var.app_name
   owner = "ops-team"
@@ -258,7 +258,7 @@ module "tags_prod" {
 ### Pattern 3: Multi-Region
 ```hcl
 module "tags_region" {
-  source = "./cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
   environment = var.environment
   application = var.application
   owner = var.owner

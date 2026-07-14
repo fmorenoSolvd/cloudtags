@@ -30,7 +30,7 @@ These inputs have default values and are NOT required:
 
 ```hcl
 module "tags_minimal" {
-  source = "./modules/cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   # 8 REQUIRED INPUTS
   env            = "prd"
@@ -54,7 +54,7 @@ module "tags_minimal" {
 
 ```hcl
 module "tags_complete" {
-  source = "./modules/cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   # 8 REQUIRED INPUTS
   env            = "prd"
@@ -301,7 +301,7 @@ module "tags" {
 ### Minimal Setup (Dev Environment)
 ```hcl
 module "tags_dev" {
-  source = "./modules/cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   # 8 REQUIRED
   env            = "dev"
@@ -322,7 +322,7 @@ module "tags_dev" {
 ### Complete Setup (Prod Environment)
 ```hcl
 module "tags_prod" {
-  source = "./modules/cloudtags"
+  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
   # 8 REQUIRED
   env            = "prd"

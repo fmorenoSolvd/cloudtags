@@ -148,7 +148,7 @@ USAGE EXAMPLES:
 
 Basic (3 required variables):
   module "tags" {
-    source = "./modules/cloudtags"
+    source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
     environment = "dev"
     application = "api"
     owner       = "api-team"
@@ -156,7 +156,7 @@ Basic (3 required variables):
 
 Complete (all variables):
   module "tags" {
-    source      = "./modules/cloudtags"
+    source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
     environment = "prod"
     application = "webapp"
     owner       = "platform"
