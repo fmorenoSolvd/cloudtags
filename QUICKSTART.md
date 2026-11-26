@@ -23,7 +23,7 @@ Every module call must set these eight inputs:
 |-------|---------|----------------|
 | `automation` | `"none"` | `none`, `tofu`, `cfmt`, `pulu`, `bice` |
 | `backup` | `"none"` | `none`, `daily`, `weekly`, `monthly` |
-| `schedule` | `""` | Crontab, only when `backup` is not `"none"` |
+| `schedule` | `""` | Crontab. Required when `backup` is not `"none"`, must be empty when `backup` is `"none"` |
 | `compliance` | `"none"` | `hipaa`, `gdpr`, `soc2`, `none` (emitted as a `compliance` tag unless `none`) |
 | `additional-tags` | `{}` | Map of string keys to string values |
 
@@ -56,8 +56,6 @@ Resulting tags:
   "business-unit"  = "aie"
   "cost-center"    = "1000001234"
   "automation"     = "none"
-  "backup"         = "none"
-  "schedule"       = ""
 }
 ```
 

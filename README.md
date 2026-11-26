@@ -58,7 +58,7 @@ All input names use lowercase words separated by hyphens.
 |------|---------|-------------|------------|
 | `automation` | `"none"` | IaC tool managing the resource | One of `none`, `tofu`, `cfmt`, `pulu`, `bice` |
 | `backup` | `"none"` | Backup frequency | One of `none`, `daily`, `weekly`, `monthly` |
-| `schedule` | `""` | Backup schedule in crontab format | Empty, or 5 crontab fields. Must not be set when `backup = "none"` (see Validation below) |
+| `schedule` | `""` | Backup schedule in crontab format | Required when `backup` is not `"none"`. Must be empty when `backup = "none"`. Crontab format (5 fields) |
 | `compliance` | `"none"` | Regulatory compliance requirement | Empty, or one of `hipaa`, `gdpr`, `soc2`, `none` |
 | `additional-tags` | `{}` | Extra tags as a map of strings | Keys 1–256 chars, values 1–1024 chars, all non-empty |
 
@@ -78,8 +78,8 @@ Tags are built from `core_tags`, then `additional-tags` are merged last and over
 | `app-name` | `app-name` | Yes |
 | `cost-center` | `cost-center` | Yes |
 | `automation` | `automation` | Yes |
-| `backup` | `backup` | Yes |
-| `schedule` | `schedule` | Yes, may be an empty string (see Known gaps) |
+| `backup` | `backup` | Only if `backup` is not `"none"` and `schedule` is set |
+| `schedule` | `schedule` | Same as `backup` |
 | `compliance` | `compliance` | Only if not `"none"` |
 | *(any)* | `additional-tags` keys | Only if set. Keys are passed through unchanged |
 
@@ -114,16 +114,16 @@ Output names use underscores; only inputs and tag keys use hyphens.
 
 Input validation runs when the module is planned. Each rule is listed under Inputs.
 
-A cross-input rule is enforced at apply time through a `null_resource` that runs `local-exec` and exits with an error:
+Two cross-input rules are enforced at apply time through `null_resource` resources in `main.tf` that run `local-exec` and exit with an error:
 
 - `schedule` set while `backup = "none"` fails with `schedule cannot be set when backup is "none"`.
+- `backup` not `"none"` with no `schedule` fails with `schedule is required when backup is not "none"`.
 
 ## Known gaps
 
-- **Empty values become tags.** `schedule` is always added to the core tags, so it is present as `""` when unset. `compliance` is added when it is not `"none"`, so the empty string passes validation and becomes `compliance = ""`.
+- **Empty compliance becomes a tag.** `compliance = ""` passes validation and is not `"none"`, so it is emitted as `compliance = ""`.
 - **`gcp_labels` and crontab values.** Lowercasing and space-to-hyphen replacement applies to values too. For example, `schedule = "0 3 * * *"` becomes `"0-3-*-*-*"`. GCP label values may not allow `*`, so check this before using `gcp_labels` with `schedule`.
 - **`additional-tags` keys are not normalized.** Keys such as `Team` are kept as written.
-- **Schedule check happens at apply time**, not during input validation.
 
 ## Files
 

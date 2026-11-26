@@ -116,7 +116,7 @@ variable "schedule" {
   default     = ""
 
   validation {
-    condition     = length(var.schedule) == 0 || can(regex("^([0-9*,/-]+\\s+){4}[0-9*,/-A-Za-z]+$", var.schedule))
+    condition     = length(var.schedule) == 0 || can(regex("^([0-9*,/-]+\\s+){4}[0-9*,/A-Za-z-]+$", var.schedule))
     error_message = "Schedule must be empty or in valid crontab format (e.g., '0 4 * * SUN')."
   }
 }

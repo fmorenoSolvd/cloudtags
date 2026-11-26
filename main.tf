@@ -7,6 +7,15 @@ resource "null_resource" "schedule_validation" {
   }
 }
 
+# Validate constraint: schedule is required when backup is not "none"
+resource "null_resource" "backup_schedule_validation" {
+  count = local.backup_requires_schedule ? 1 : 0
+
+  provisioner "local-exec" {
+    command = "echo 'Error: schedule is required when backup is not \"none\"' && exit 1"
+  }
+}
+
 # Validate all validation errors
 resource "null_resource" "validation_errors" {
   count = length(local.validation_errors) > 0 ? 1 : 0
