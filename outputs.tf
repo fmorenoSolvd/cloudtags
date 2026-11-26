@@ -44,11 +44,6 @@ output "core_tags" {
   value       = local.core_tags
 }
 
-output "optional_tags" {
-  description = "Optional tags that were included based on inputs"
-  value       = local.optional_tags
-}
-
 output "tags_by_category" {
   description = "Tags organized by category for reference"
   value = {
@@ -69,7 +64,7 @@ output "tags_by_category" {
       backup     = var.backup
     }
     optional = {
-      classification = var.classification != "" ? var.classification : null
+      compliance = var.compliance != "" ? var.compliance : null
       schedule       = var.schedule != "" ? var.schedule : null
     }
   }

@@ -62,11 +62,11 @@ All input names use lowercase words separated by hyphens.
 | `compliance` | `"none"` | Regulatory compliance requirement | Empty, or one of `hipaa`, `gdpr`, `soc2`, `none` |
 | `additional-tags` | `{}` | Extra tags as a map of strings | Keys 1–256 chars, values 1–1024 chars, all non-empty |
 
-> `compliance` is validated but is **not** included in any output tag map. See [Known gaps](#known-gaps).
+> `compliance` is emitted as a `compliance` tag when it is not `"none"`. See [Known gaps](#known-gaps) for the empty-string case.
 
 ## Tags
 
-Core tags are always present. Optional tags appear only when their input is non-empty. `additional-tags` are merged last and override any earlier key with the same name.
+Tags are built from `core_tags`, then `additional-tags` are merged last and override any earlier key with the same name.
 
 | Tag key | Source input | Always present |
 |---------|--------------|----------------|
@@ -79,7 +79,8 @@ Core tags are always present. Optional tags appear only when their input is non-
 | `cost-center` | `cost-center` | Yes |
 | `automation` | `automation` | Yes |
 | `backup` | `backup` | Yes |
-| `schedule` | `schedule` | Only if set |
+| `schedule` | `schedule` | Yes, may be an empty string (see Known gaps) |
+| `compliance` | `compliance` | Only if not `"none"` |
 | *(any)* | `additional-tags` keys | Only if set. Keys are passed through unchanged |
 
 `app-short` is not a tag. It is used for the name prefix and output values.
@@ -93,8 +94,7 @@ Core tags are always present. Optional tags appear only when their input is non-
 | `aws_tags` | Same as `tags`. |
 | `azure_tags` | Same as `tags`. |
 | `gcp_labels` | Tags with keys and values lowercased and spaces replaced by hyphens. |
-| `core_tags` | The always-present tags. |
-| `optional_tags` | The tags included from optional inputs. |
+| `core_tags` | The core tag map, before `additional-tags` are merged. |
 | `tags_by_category` | Tags grouped into `identity`, `organization`, `billing`, `infrastructure`, `optional`. |
 | `name_prefix` | 6-character prefix: first 3 chars of `env` + `app-short` (lowercased). |
 | `env` | Echo of `env`. |
@@ -120,8 +120,7 @@ A cross-input rule is enforced at apply time through a `null_resource` that runs
 
 ## Known gaps
 
-- **`compliance` is not emitted as a tag.** It is validated but no tag, output, or `locals` entry uses it.
-- **`classification` is referenced but not declared.** `locals.tf` and `outputs.tf` read `var.classification`, but `variables.tf` no longer declares it. `terraform validate` fails with "Reference to undeclared input variable" until one of the two is fixed.
+- **Empty values become tags.** `schedule` is always added to the core tags, so it is present as `""` when unset. `compliance` is added when it is not `"none"`, so the empty string passes validation and becomes `compliance = ""`.
 - **`gcp_labels` and crontab values.** Lowercasing and space-to-hyphen replacement applies to values too. For example, `schedule = "0 3 * * *"` becomes `"0-3-*-*-*"`. GCP label values may not allow `*`, so check this before using `gcp_labels` with `schedule`.
 - **`additional-tags` keys are not normalized.** Keys such as `Team` are kept as written.
 - **Schedule check happens at apply time**, not during input validation.

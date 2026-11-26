@@ -24,7 +24,7 @@ Every module call must set these eight inputs:
 | `automation` | `"none"` | `none`, `tofu`, `cfmt`, `pulu`, `bice` |
 | `backup` | `"none"` | `none`, `daily`, `weekly`, `monthly` |
 | `schedule` | `""` | Crontab, only when `backup` is not `"none"` |
-| `compliance` | `"none"` | `hipaa`, `gdpr`, `soc2`, `none` (validated only; not emitted as a tag) |
+| `compliance` | `"none"` | `hipaa`, `gdpr`, `soc2`, `none` (emitted as a `compliance` tag unless `none`) |
 | `additional-tags` | `{}` | Map of string keys to string values |
 
 ## Minimal configuration
@@ -57,6 +57,7 @@ Resulting tags:
   "cost-center"    = "1000001234"
   "automation"     = "none"
   "backup"         = "none"
+  "schedule"       = ""
 }
 ```
 
