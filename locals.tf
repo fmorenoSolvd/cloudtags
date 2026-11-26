@@ -6,16 +6,19 @@ locals {
   name_prefix_generated = "${local.env_code}${local.app_short_code}"
 
   # Mandatory core tags (always included)
-  core_tags = {
+  core_tags1 = {
     env              = var.env
     project          = var.project
+    "app-name"       = var.app-name
     "business-owner" = var.business-owner
     "tech-owner"     = var.tech-owner
     "business-unit"  = var.business-unit
     "cost-center"    = var.cost-center
-    automation       = var.automation
-    backup           = var.backup
+
+    automation = var.automation
+    backup     = var.backup
   }
+  core_tags = var.schedule != "" && var.backup != "none" ? merge(local.core_tags1, { backup = var.backup, schedule = var.schedule }) : local.core_tags1
 
   # Optional tags - only included if provided
   optional_tags = merge(

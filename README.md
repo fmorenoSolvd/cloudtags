@@ -59,7 +59,6 @@ All input names use lowercase words separated by hyphens.
 | `automation` | `"none"` | IaC tool managing the resource | One of `none`, `tofu`, `cfmt`, `pulu`, `bice` |
 | `backup` | `"none"` | Backup frequency | One of `none`, `daily`, `weekly`, `monthly` |
 | `schedule` | `""` | Backup schedule in crontab format | Empty, or 5 crontab fields. Must not be set when `backup = "none"` (see Validation below) |
-| `classification` | `""` | Data classification | Empty, or one of `public`, `confidential`, `restricted` |
 | `compliance` | `"none"` | Regulatory compliance requirement | Empty, or one of `hipaa`, `gdpr`, `soc2`, `none` |
 | `additional-tags` | `{}` | Extra tags as a map of strings | Keys 1–256 chars, values 1–1024 chars, all non-empty |
 
@@ -76,14 +75,14 @@ Core tags are always present. Optional tags appear only when their input is non-
 | `business-owner` | `business-owner` | Yes |
 | `tech-owner` | `tech-owner` | Yes |
 | `business-unit` | `business-unit` | Yes |
+| `app-name` | `app-name` | Yes |
 | `cost-center` | `cost-center` | Yes |
 | `automation` | `automation` | Yes |
 | `backup` | `backup` | Yes |
-| `classification` | `classification` | Only if set |
 | `schedule` | `schedule` | Only if set |
 | *(any)* | `additional-tags` keys | Only if set. Keys are passed through unchanged |
 
-`app-short` and `app-name` are not tags. They are used for the name prefix and output values.
+`app-short` is not a tag. It is used for the name prefix and output values.
 
 ## Outputs
 
@@ -122,6 +121,7 @@ A cross-input rule is enforced at apply time through a `null_resource` that runs
 ## Known gaps
 
 - **`compliance` is not emitted as a tag.** It is validated but no tag, output, or `locals` entry uses it.
+- **`classification` is referenced but not declared.** `locals.tf` and `outputs.tf` read `var.classification`, but `variables.tf` no longer declares it. `terraform validate` fails with "Reference to undeclared input variable" until one of the two is fixed.
 - **`gcp_labels` and crontab values.** Lowercasing and space-to-hyphen replacement applies to values too. For example, `schedule = "0 3 * * *"` becomes `"0-3-*-*-*"`. GCP label values may not allow `*`, so check this before using `gcp_labels` with `schedule`.
 - **`additional-tags` keys are not normalized.** Keys such as `Team` are kept as written.
 - **Schedule check happens at apply time**, not during input validation.

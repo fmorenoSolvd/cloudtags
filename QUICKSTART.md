@@ -24,7 +24,6 @@ Every module call must set these eight inputs:
 | `automation` | `"none"` | `none`, `tofu`, `cfmt`, `pulu`, `bice` |
 | `backup` | `"none"` | `none`, `daily`, `weekly`, `monthly` |
 | `schedule` | `""` | Crontab, only when `backup` is not `"none"` |
-| `classification` | `""` | `public`, `confidential`, `restricted` |
 | `compliance` | `"none"` | `hipaa`, `gdpr`, `soc2`, `none` (validated only; not emitted as a tag) |
 | `additional-tags` | `{}` | Map of string keys to string values |
 
@@ -50,6 +49,7 @@ Resulting tags:
 ```hcl
 {
   "env"            = "prd"
+  "app-name"       = "payments"
   "project"        = "payments"
   "business-owner" = "fmoreno"
   "tech-owner"     = "jsmith"
@@ -80,7 +80,6 @@ module "tags" {
   automation     = "tofu"
   backup         = "daily"
   schedule       = "0 3 * * *"
-  classification = "restricted"
 
   additional-tags = {
     Team = "payments"
@@ -88,7 +87,7 @@ module "tags" {
 }
 ```
 
-This adds `automation = "tofu"`, `backup = "daily"`, `schedule = "0 3 * * *"`, `classification = "restricted"`, and `Team = "payments"` to the tag map.
+This adds `automation = "tofu"`, `backup = "daily"`, `schedule = "0 3 * * *"`, and `Team = "payments"` to the tag map.
 
 ## Using the tags
 
@@ -111,5 +110,4 @@ resource "aws_autoscaling_group" "app" {
 - [ ] Choose `backup` (`daily`, `weekly`, `monthly`, or `none`)
 - [ ] If `backup` is not `none`, set `schedule` in crontab format
 - [ ] If `backup` is `none`, leave `schedule` empty (apply fails otherwise)
-- [ ] If the data is sensitive, set `classification`
 - [ ] Run `terraform plan` to check validation
