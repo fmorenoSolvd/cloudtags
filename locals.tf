@@ -22,7 +22,7 @@ locals {
 
   # Optional tags - only included if provided
   optional_tags = merge(
-    var.classification != "" ? { classification = var.classification } : {},
+    var.compliance != "" ? { compliance = var.compliance } : {},
     var.schedule != "" ? { schedule = var.schedule } : {}
   )
 
