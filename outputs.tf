@@ -26,12 +26,12 @@ output "env" {
 
 output "app_short" {
   description = "The application short code (3 letters) used in name prefix generation"
-  value       = var.app_short
+  value       = var.app-short
 }
 
 output "app_name" {
   description = "The application complete name from inputs"
-  value       = var.app_name
+  value       = var.app-name
 }
 
 output "project" {
@@ -53,16 +53,16 @@ output "tags_by_category" {
   description = "Tags organized by category for reference"
   value = {
     identity = {
-      env            = var.env
-      project        = var.project
-      business_owner = var.business_owner
-      tech_owner     = var.tech_owner
+      env              = var.env
+      project          = var.project
+      "business-owner" = var.business-owner
+      "tech-owner"     = var.tech-owner
     }
     organization = {
-      business_unit = var.business_unit
+      "business-unit" = var.business-unit
     }
     billing = {
-      cost_center = var.cost_center
+      "cost-center" = var.cost-center
     }
     infrastructure = {
       automation = var.automation

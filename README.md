@@ -1,305 +1,139 @@
 # Multicloud Tag Module
 
-A comprehensive Terraform module for managing consistent tagging across multicloud environments (AWS, Azure, GCP). This module provides a centralized, validated approach to tagging with support for environment-based naming, mandatory tags, and cloud-specific formatting.
+Terraform module that validates a fixed set of tagging inputs and produces a consistent tag set for AWS, Azure, and GCP resources. It also generates a 6-character name prefix.
 
-## Features
+Source for this document: `variables.tf`, `locals.tf`, `outputs.tf`, `main.tf`, `versions.tf`.
 
-- **Multicloud Support**: Native formatting for AWS, Azure, and GCP resources
-- **6-Character Name Prefix**: Automatically generated from environment and application names for resource naming
-- **Validated Inputs**: Comprehensive validation for all tag inputs
-- **Flexible Tagging**: Core tags, optional tags, and additional custom tags
-- **Cloud-Specific Formats**: Different tag formats optimized for each cloud provider
-- **Mandatory Tags**: Enforce specific tags in output
-- **Tag Categorization**: Organized views of tags by type (identity, metadata, billing, organization)
-- **ASG Compatibility**: Special formatting for AWS Auto Scaling Groups
+- Usage examples and a checklist: [QUICKSTART.md](QUICKSTART.md)
+
+## Requirements
+
+| Name | Version |
+|------|---------|
+| terraform | >= 1.0 |
+| hashicorp/null | >= 3.0 |
 
 ## Usage
 
-### Basic Example
-
 ```hcl
 module "tags" {
   source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
 
-  environment = "dev"
-  application = "myapp"
-  owner       = "platform-team"
-}
-```
-
-### Complete Example
-
-```hcl
-module "tags" {
-  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
-
-  # Required variables
-  environment = "production"
-  application = "webapp"
-  owner       = "backend-team"
-
-  # Optional variables
-  created_by        = "terraform"
-  cost_center       = "CC-12345"
-  cloud_provider    = "aws"
-  project           = "digital-transformation"
-  team              = "backend"
-  business_unit     = "engineering"
-  terraform_version = "1.5.0"
-
-  # Additional custom tags
-  additional_tags = {
-    "DataClassification" = "confidential"
-    "BackupPolicy"       = "daily"
-    "ComplianceGroup"    = "hipaa"
-  }
-
-  # Enforce specific tags
-  mandatory_tags = ["Environment", "Application", "Owner"]
-
-  # Optional tag prefix (e.g., for multi-tenant scenarios)
-  tag_name_prefix = "myorg-"
+  env            = "prd"
+  app-short      = "pay"
+  app-name       = "payments"
+  project        = "payments"
+  business-owner = "fmoreno"
+  tech-owner     = "jsmith"
+  business-unit  = "aie"
+  cost-center    = "1000001234"
 }
 
-# Use in AWS resources
 resource "aws_instance" "example" {
-  ami           = "ami-0c55b159cbfafe1f0"
-  instance_type = "t2.micro"
-
-  tags = merge(
-    module.tags.tags,
-    {
-      Name = "${module.tags.name_prefix}-server-001"
-    }
-  )
-}
-
-# Use with AWS ASG
-resource "aws_autoscaling_group" "example" {
-  name                = "${module.tags.name_prefix}-asg"
-  min_size            = 1
-  max_size            = 5
-  desired_capacity    = 3
-  vpc_zone_identifier = var.subnet_ids
-
-  tag = module.tags.tags_list
-}
-
-# Use in Azure resources
-resource "azurerm_resource_group" "example" {
-  name       = "${module.tags.name_prefix}-rg"
-  location   = "East US"
-
-  tags = module.tags.azure_tags
-}
-
-# Use in GCP resources
-resource "google_compute_instance" "example" {
-  name         = "${module.tags.name_prefix}-vm"
-  machine_type = "e2-medium"
-  zone         = "us-central1-a"
-
-  labels = module.tags.gcp_labels
+  # ...
+  tags = module.tags.tags
 }
 ```
 
 ## Inputs
 
-| Name | Description | Type | Required | Default |
-|------|-------------|------|----------|---------|
-| `environment` | The environment (dev, staging, prod, etc.) | `string` | Yes | - |
-| `application` | Application name and/or identifier | `string` | Yes | - |
-| `owner` | Owner or team responsible for this resource | `string` | Yes | - |
-| `created_by` | Framework or method that created the resource | `string` | No | `"terraform"` |
-| `cost_center` | Cost center or billing code for chargeback | `string` | No | `""` |
-| `cloud_provider` | Cloud provider (aws, azure, gcp, or empty) | `string` | No | `""` |
-| `project` | Project name or identifier | `string` | No | `""` |
-| `team` | Team or department managing this resource | `string` | No | `""` |
-| `business_unit` | Business unit or organization | `string` | No | `""` |
-| `terraform_version` | Version of Terraform used | `string` | No | `""` |
-| `additional_tags` | Additional optional tags as key-value pairs | `map(string)` | No | `{}` |
-| `mandatory_tags` | List of tag keys that must be present | `list(string)` | No | `[]` |
-| `tag_name_prefix` | Prefix to apply to all tag keys | `string` | No | `""` |
+All input names use lowercase words separated by hyphens.
+
+### Required
+
+| Name | Description | Validation |
+|------|-------------|------------|
+| `env` | Environment code | One of `prd`, `stg`, `uat`, `qa`, `dev`, `snd` (case-insensitive) |
+| `project` | Project name | Non-empty, max 10 characters |
+| `app-short` | Application short code | Exactly 3 letters, case-insensitive |
+| `app-name` | Application name | Non-empty, max 10 characters |
+| `business-owner` | Business owner username | Non-empty, max 128 characters, no `@` |
+| `tech-owner` | Technical owner username | Non-empty, max 128 characters, no `@` |
+| `business-unit` | Business unit code | 2–3 letters, case-insensitive (e.g. `aie`, `hr`, `it`) |
+| `cost-center` | Cost center code | Digits only, non-empty, max 10 digits |
+
+### Optional
+
+| Name | Default | Description | Validation |
+|------|---------|-------------|------------|
+| `automation` | `"none"` | IaC tool managing the resource | One of `none`, `tofu`, `cfmt`, `pulu`, `bice` |
+| `backup` | `"none"` | Backup frequency | One of `none`, `daily`, `weekly`, `monthly` |
+| `schedule` | `""` | Backup schedule in crontab format | Empty, or 5 crontab fields. Must not be set when `backup = "none"` (see Validation below) |
+| `classification` | `""` | Data classification | Empty, or one of `public`, `confidential`, `restricted` |
+| `compliance` | `"none"` | Regulatory compliance requirement | Empty, or one of `hipaa`, `gdpr`, `soc2`, `none` |
+| `additional-tags` | `{}` | Extra tags as a map of strings | Keys 1–256 chars, values 1–1024 chars, all non-empty |
+
+> `compliance` is validated but is **not** included in any output tag map. See [Known gaps](#known-gaps).
+
+## Tags
+
+Core tags are always present. Optional tags appear only when their input is non-empty. `additional-tags` are merged last and override any earlier key with the same name.
+
+| Tag key | Source input | Always present |
+|---------|--------------|----------------|
+| `env` | `env` | Yes |
+| `project` | `project` | Yes |
+| `business-owner` | `business-owner` | Yes |
+| `tech-owner` | `tech-owner` | Yes |
+| `business-unit` | `business-unit` | Yes |
+| `cost-center` | `cost-center` | Yes |
+| `automation` | `automation` | Yes |
+| `backup` | `backup` | Yes |
+| `classification` | `classification` | Only if set |
+| `schedule` | `schedule` | Only if set |
+| *(any)* | `additional-tags` keys | Only if set. Keys are passed through unchanged |
+
+`app-short` and `app-name` are not tags. They are used for the name prefix and output values.
 
 ## Outputs
 
 | Name | Description |
 |------|-------------|
-| `tags` | Map of tags suitable for AWS, Azure, and other resources |
-| `tags_list` | Tags formatted as a list for AWS Auto Scaling Groups |
-| `name_prefix` | 6-character prefix derived from environment and application |
-| `environment` | The environment value |
-| `application` | The application name value |
-| `core_tags` | Core tags always included |
-| `optional_tags` | Optional tags based on inputs |
-| `tags_by_category` | Tags organized by category (identity, metadata, billing, organization) |
-| `aws_tags` | Tags formatted for AWS resources |
-| `azure_tags` | Tags formatted for Azure resources |
-| `gcp_labels` | Labels formatted for GCP resources |
-| `tag_count` | Total number of tags |
-| `tag_keys` | Sorted list of all tag keys |
+| `tags` | Map of all tags. Use for most resources. |
+| `tags_list` | List of `{ key, value, propagate_at_launch = true }`. Use for AWS Auto Scaling Groups. |
+| `aws_tags` | Same as `tags`. |
+| `azure_tags` | Same as `tags`. |
+| `gcp_labels` | Tags with keys and values lowercased and spaces replaced by hyphens. |
+| `core_tags` | The always-present tags. |
+| `optional_tags` | The tags included from optional inputs. |
+| `tags_by_category` | Tags grouped into `identity`, `organization`, `billing`, `infrastructure`, `optional`. |
+| `name_prefix` | 6-character prefix: first 3 chars of `env` + `app-short` (lowercased). |
+| `env` | Echo of `env`. |
+| `app_short` | Echo of `app-short`. |
+| `app_name` | Echo of `app-name`. |
+| `project` | Echo of `project`. |
+| `tag_count` | Number of tags in the final map. |
+| `tag_keys` | Sorted list of tag keys. |
 
-## Name Prefix Generation
+Output names use underscores; only inputs and tag keys use hyphens.
 
-The `name_prefix` output generates a 6-character identifier from the environment and application:
+## Name prefix
 
-- Takes the first 3 characters of the environment (lowercased)
-- Takes the first 3 characters of the application (lowercased)
-- Combines them to create a maximum 6-character prefix
+`name_prefix` = `lower(env)` + `lower(app-short)`, for example `prdpay`.
 
-**Examples:**
-- `environment = "dev"`, `application = "webapp"` → `devweb`
-- `environment = "production"`, `application = "backend"` → `prodba`
-- `environment = "staging"`, `application = "api"` → `stagapi`
+## Validation
 
-## Tag Structure
+Input validation runs when the module is planned. Each rule is listed under Inputs.
 
-### Core Tags (Always Included)
-- `Environment`: The deployment environment
-- `Application`: The application name
-- `Owner`: The responsible owner/team
-- `CreatedBy`: The tool/framework used
-- `ManagedBy`: Always set to "Terraform"
+A cross-input rule is enforced at apply time through a `null_resource` that runs `local-exec` and exits with an error:
 
-### Optional Tags (Included if Provided)
-- `CostCenter`: For billing and cost allocation
-- `CloudProvider`: The cloud provider being used
-- `Project`: Associated project
-- `Team`: Responsible team
-- `BusinessUnit`: Business organization
-- `TerraformVersion`: Terraform version used
+- `schedule` set while `backup = "none"` fails with `schedule cannot be set when backup is "none"`.
 
-### Additional Tags
-Custom tags provided via `additional_tags` variable with highest priority.
+## Known gaps
 
-## Cloud Provider Support
+- **`compliance` is not emitted as a tag.** It is validated but no tag, output, or `locals` entry uses it.
+- **`gcp_labels` and crontab values.** Lowercasing and space-to-hyphen replacement applies to values too. For example, `schedule = "0 3 * * *"` becomes `"0-3-*-*-*"`. GCP label values may not allow `*`, so check this before using `gcp_labels` with `schedule`.
+- **`additional-tags` keys are not normalized.** Keys such as `Team` are kept as written.
+- **Schedule check happens at apply time**, not during input validation.
 
-### AWS
-- Uses standard tag map format
-- Supports ASG-specific formatting via `tags_list`
-- Compatible with all AWS resources
+## Files
 
-### Azure
-- Uses standard tag map format
-- Meets Azure naming requirements
-- Compatible with all Azure resources
-
-### GCP
-- Converts to lowercase labels with hyphens
-- Meets GCP label naming restrictions
-- Automatically formats via `gcp_labels` output
-
-## Validation Rules
-
-All inputs are validated for:
-- Non-empty strings (trimmed)
-- Maximum length constraints
-- Format requirements (e.g., cloud provider values)
-
-Mandatory tag validation ensures that all specified required tags are present in the final output.
-
-## Examples
-
-### Development Environment
-
-```hcl
-module "tags_dev" {
-  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
-
-  environment    = "dev"
-  application    = "backend"
-  owner          = "backend-team"
-  cloud_provider = "aws"
-  team           = "engineering"
-
-  additional_tags = {
-    "AutoShutdown" = "true"
-    "RetentionDays" = "7"
-  }
-}
-```
-
-### Production Environment
-
-```hcl
-module "tags_prod" {
-  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
-
-  environment      = "prod"
-  application      = "webapp"
-  owner            = "platform-team"
-  cost_center      = "CC-PROD-001"
-  cloud_provider   = "aws"
-  team             = "platform"
-  business_unit    = "operations"
-  terraform_version = "1.5.0"
-
-  mandatory_tags = [
-    "Environment",
-    "Application",
-    "Owner",
-    "CostCenter"
-  ]
-
-  additional_tags = {
-    "Backup"           = "daily"
-    "BackupRetention"  = "30"
-    "DisasterRecovery" = "required"
-    "Monitoring"       = "enhanced"
-  }
-}
-```
-
-### Multi-Tenant SaaS
-
-```hcl
-module "tags_tenant" {
-  source = "git::https://github.com/fmorenoSolvd/cloudtags.git"
-
-  environment     = "prod"
-  application     = "saas-api"
-  owner           = "platform-team"
-  project         = var.tenant_id
-  tag_name_prefix = "tenant-"
-
-  additional_tags = {
-    "TenantID"  = var.tenant_id
-    "TierLevel" = var.tenant_tier
-  }
-}
-```
-
-## Best Practices
-
-1. **Consistency**: Use this module across all infrastructure code for consistent tagging
-2. **Mandatory Tags**: Define mandatory tags per organization to enforce compliance
-3. **Naming**: Use the `name_prefix` output for consistent resource naming
-4. **Cost Attribution**: Always populate `cost_center` for billing and chargeback
-5. **Team Tracking**: Use `owner` and `team` for RACI matrices and escalations
-6. **Versioning**: Track the Terraform version using `terraform_version` for troubleshooting
-7. **Environment Separation**: Use different modules per environment to prevent accidental cross-environment tag mixing
-
-## Troubleshooting
-
-### Missing Mandatory Tags Error
-If you receive an error about missing mandatory tags:
-1. Check that you've specified all required `mandatory_tags` keys
-2. Ensure the keys match the tag names in the module output
-3. Verify that additional tags aren't being merged with incompatible keys
-
-### Name Prefix Truncation
-The name prefix is limited to 6 characters. For longer identifiers:
-- Use the `environment` and `application` outputs separately
-- Create additional outputs in your root module
-
-### Cloud Provider Specific Issues
-
-**GCP Labels**: If labels are rejected, remember that GCP converts them to lowercase with hyphens. The module handles this automatically via the `gcp_labels` output.
-
-**Azure**: Ensure cost_center and other values don't contain special characters that Azure prohibits.
-
-**AWS**: The `tags_list` output is specifically formatted for Auto Scaling Groups with `propagate_at_launch = true`.
-
-## License
-
-This module is provided as-is for use in your infrastructure projects.
+| File | Purpose |
+|------|---------|
+| `variables.tf` | Input declarations and validation |
+| `locals.tf` | Tag maps, name prefix, cross-input checks |
+| `outputs.tf` | Module outputs |
+| `main.tf` | `null_resource` checks for cross-input errors |
+| `versions.tf` | Terraform and provider versions |
+| `QUICKSTART.md` | Usage examples and checklist |
+| `LICENSE` | License |
